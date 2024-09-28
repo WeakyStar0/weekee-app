@@ -1,5 +1,6 @@
 # Terms of Service for Weekee
 
+**Effective Date: September 28, 2024**
 **Last Updated: September 28, 2024**
 
 Welcome to Weekee! These Terms of Service ("Terms") govern your use of our Discord bot and its features. By accessing or using Weekee, you agree to comply with and be bound by these Terms. If you do not agree, please refrain from using the bot.
