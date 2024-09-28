@@ -34,4 +34,5 @@ We reserve the right to modify these Terms at any time. Changes will be communic
 ## 10. Governing Law
 These Terms shall be governed by and construed in accordance with the laws applicable to Discord applications.
 
+
 By using Weekee, you acknowledge that you have read, understood, and agree to these Terms of Service. Enjoy your time with Weekee!
