@@ -2,6 +2,8 @@
 
 **Effective Date: September 28, 2024**
 
+**Last Updated: September 28, 2024**
+
 ## 1. Introduction
 This Privacy Policy explains how Weekee ("the Bot") collects, uses, and protects user information. By using Weekee, you agree to the collection and use of information in accordance with this policy.
 
