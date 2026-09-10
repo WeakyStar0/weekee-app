@@ -5,9 +5,21 @@ import type { ExtendedClient } from '../structures/ExtendedClient';
 const event: BotEvent = {
   name: Events.InteractionCreate,
   async execute(interaction) {
+    const client = interaction.client as ExtendedClient;
+
+    if (interaction.isAutocomplete()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command?.autocomplete) return;
+      try {
+        await command.autocomplete(interaction);
+      } catch (error) {
+        console.error(`Error in autocomplete for "${interaction.commandName}":`, error);
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
-    const client = interaction.client as ExtendedClient;
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 

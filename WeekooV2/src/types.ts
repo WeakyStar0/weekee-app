@@ -1,4 +1,5 @@
 import type {
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
   SlashCommandOptionsOnlyBuilder,
@@ -13,6 +14,8 @@ export type CommandData =
 export interface Command {
   data: CommandData;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
+  /** Optional — only needed if a command option has `.setAutocomplete(true)`. */
+  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
 }
 
 export interface BotEvent {

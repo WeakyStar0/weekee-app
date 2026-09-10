@@ -29,6 +29,9 @@ model User {
   birthdayDay     Int?
   birthdayMonth   Int?
 
+  lastDaily       DateTime?
+  streak          Int       @default(0)
+
   weaponId        String?
   pickaxeId       String?
   armorId         String?
@@ -56,6 +59,10 @@ model Item {
   mainStatValue    Int      @default(0)
   statModifierType String?
   price            Int      @default(0)
+  description      String   @default("")
+  rarity           String   @default("Common")
+  isLocked         Boolean  @default(false)
+  maxInventory     Int      @default(64)
   createdAt        DateTime @default(now())
 
   inventories       Inventory[]

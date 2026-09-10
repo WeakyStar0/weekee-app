@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "Item" ADD COLUMN     "description" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "isLocked" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "maxInventory" INTEGER NOT NULL DEFAULT 64,
+ADD COLUMN     "rarity" TEXT NOT NULL DEFAULT 'Common';
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "lastDaily" TIMESTAMP(3),
+ADD COLUMN     "streak" INTEGER NOT NULL DEFAULT 0;
