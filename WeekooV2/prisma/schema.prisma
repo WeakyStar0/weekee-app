@@ -7,13 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Player record. discordId is the natural key — no separate internal id,
+// mirrors how V1 kept discord_id as the primary identifier across tables.
 model User {
-  id        String   @id @default(cuid())
-  discordId String   @unique
-  coins     Int      @default(0)
-  xp        Int      @default(0)
-  level     Int      @default(1)
-  energy    Int      @default(100)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  discordId       String    @id
+  username        String
+  description     String    @default("No description set.")
+  weekoins        Int       @default(0)
+  xp              Int       @default(0)
+  level           Int       @default(1)
+  energy          Int       @default(100)
+  lastEnergyReset DateTime  @default(now())
+
+  // Base combat stats before equipment bonuses.
+  baseDamage      Int       @default(10)
+  baseDefense     Int       @default(0)
+  baseLuck        Int       @default(1)
+  baseMagicDamage Int       @default(0)
+  baseHp          Int       @default(100)
+
+  birthdayDay     Int?
+  birthdayMonth   Int?
+
+  weaponId        String?
+  pickaxeId       String?
+  armorId         String?
+  trinketId       String?
+  dimensionId     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  weapon          Item?      @relation("UserWeapon", fields: [weaponId], references: [id])
+  pickaxe         Item?      @relation("UserPickaxe", fields: [pickaxeId], references: [id])
+  armor           Item?      @relation("UserArmor", fields: [armorId], references: [id])
+  trinket         Item?      @relation("UserTrinket", fields: [trinketId], references: [id])
+  dimension       Dimension? @relation(fields: [dimensionId], references: [id])
+  inventory       Inventory[]
+}
+
+// itemType: "weapon" | "pickaxe" | "armor" | "trinket" | "material" | "block"
+// statModifierType (trinkets only): "damage" | "defense" | "luck" | "health" — percentage modifier
+model Item {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  emoji            String   @default("❔")
+  itemType         String
+  mainStatValue    Int      @default(0)
+  statModifierType String?
+  price            Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  inventories       Inventory[]
+  equippedAsWeapon  User[]  @relation("UserWeapon")
+  equippedAsPickaxe User[]  @relation("UserPickaxe")
+  equippedAsArmor   User[]  @relation("UserArmor")
+  equippedAsTrinket User[]  @relation("UserTrinket")
+}
+
+model Inventory {
+  id       String @id @default(cuid())
+  userId   String
+  itemId   String
+  quantity Int    @default(1)
+
+  user User @relation(fields: [userId], references: [discordId])
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId])
+}
+
+model Dimension {
+  id    String @id @default(cuid())
+  name  String @unique
+  emoji String @default("🌍")
+  users User[]
 }
