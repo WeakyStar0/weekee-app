@@ -17,7 +17,7 @@ const command: Command = {
     const focused = interaction.options.getFocused().toLowerCase();
     try {
       const items = await prisma.item.findMany({
-        where: { isLocked: false },
+        where: { isLocked: false, shopItem: true },
         select: { name: true },
       });
       const filtered = items.map((i) => i.name).filter((name) => name.toLowerCase().includes(focused));
@@ -37,6 +37,16 @@ const command: Command = {
       if (!item) {
         await interaction.reply({
           content: "I don't recognize that item. Please select one from the list!",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      // Autocomplete only suggests isLocked:false + shopItem:true items, but a
+      // free-typed name can bypass suggestions — enforce it here too.
+      if (item.isLocked || !item.shopItem) {
+        await interaction.reply({
+          content: "That item isn't available for purchase.",
           flags: MessageFlags.Ephemeral,
         });
         return;

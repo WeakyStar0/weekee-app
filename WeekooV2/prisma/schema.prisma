@@ -49,27 +49,40 @@ model User {
   inventory       Inventory[]
 }
 
-// itemType: "weapon" | "pickaxe" | "armor" | "trinket" | "material" | "block"
+// Normalized item categories — a fixed, DB-enforced set instead of a free
+// string, so an item can never end up with a typo'd or nonexistent type.
+model ItemType {
+  id        String   @id @default(cuid())
+  name      String   @unique // "weapon" | "pickaxe" | "armor" | "trinket" | "material" | "block" | "consumable"
+  createdAt DateTime @default(now())
+
+  items Item[]
+}
+
 // statModifierType (trinkets only): "damage" | "defense" | "luck" | "health" — percentage modifier
 model Item {
   id               String   @id @default(cuid())
   name             String   @unique
   emoji            String   @default("❔")
-  itemType         String
+  itemTypeId       String
   mainStatValue    Int      @default(0)
   statModifierType String?
   price            Int      @default(0)
   description      String   @default("")
   rarity           String   @default("Common")
   isLocked         Boolean  @default(false)
+  // False = exists and ownable/sellable, but never appears in /shop or is
+  // buyable via /buy — for drop-only items (adventure loot, quest rewards, etc).
+  shopItem         Boolean  @default(true)
   maxInventory     Int      @default(64)
   createdAt        DateTime @default(now())
 
+  itemType          ItemType     @relation(fields: [itemTypeId], references: [id])
   inventories       Inventory[]
-  equippedAsWeapon  User[]  @relation("UserWeapon")
-  equippedAsPickaxe User[]  @relation("UserPickaxe")
-  equippedAsArmor   User[]  @relation("UserArmor")
-  equippedAsTrinket User[]  @relation("UserTrinket")
+  equippedAsWeapon  User[]       @relation("UserWeapon")
+  equippedAsPickaxe User[]       @relation("UserPickaxe")
+  equippedAsArmor   User[]       @relation("UserArmor")
+  equippedAsTrinket User[]       @relation("UserTrinket")
 }
 
 model Inventory {

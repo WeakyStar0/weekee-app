@@ -6,12 +6,13 @@ import {
   ButtonStyle,
   MessageFlags,
 } from 'discord.js';
-import type { Item } from '@prisma/client';
+import type { Item, ItemType } from '@prisma/client';
 import type { Command } from '../../types';
 import { prisma } from '../../lib/prisma';
 
 const ITEMS_PER_PAGE = 5;
 type SortType = 'price' | 'power' | 'rarity' | 'name';
+type ShopItem = Item & { itemType: ItemType };
 
 const RARITY_ORDER: Record<string, number> = { Legendary: 1, Epic: 2, Rare: 3, Uncommon: 4, Common: 5 };
 const RARITY_EMOJI: Record<string, string> = {
@@ -22,7 +23,7 @@ const RARITY_EMOJI: Record<string, string> = {
   Common: '⚪',
 };
 
-function sortItems(items: Item[], sortType: SortType): Item[] {
+function sortItems(items: ShopItem[], sortType: SortType): ShopItem[] {
   const sorted = [...items];
   switch (sortType) {
     case 'price':
@@ -36,8 +37,8 @@ function sortItems(items: Item[], sortType: SortType): Item[] {
   }
 }
 
-function statLabel(item: Item): string {
-  switch (item.itemType) {
+function statLabel(item: ShopItem): string {
+  switch (item.itemType.name) {
     case 'weapon':
       return `⚔️ DMG: +${item.mainStatValue}`;
     case 'armor':
@@ -47,7 +48,7 @@ function statLabel(item: Item): string {
     case 'trinket':
       return `🔮 ${(item.statModifierType ?? '').toUpperCase()}: +${item.mainStatValue}%`;
     default:
-      return `📦 Type: ${item.itemType}`;
+      return `📦 Type: ${item.itemType.name}`;
   }
 }
 
@@ -76,7 +77,14 @@ const command: Command = {
     const filterType = interaction.options.getString('type');
 
     let items = sortItems(
-      await prisma.item.findMany({ where: { isLocked: false, ...(filterType ? { itemType: filterType } : {}) } }),
+      await prisma.item.findMany({
+        where: {
+          isLocked: false,
+          shopItem: true,
+          ...(filterType ? { itemType: { name: filterType } } : {}),
+        },
+        include: { itemType: true },
+      }),
       currentSort,
     );
 

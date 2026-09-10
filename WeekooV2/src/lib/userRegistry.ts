@@ -16,6 +16,7 @@ export async function ensureUserExists(discordId: string, username: string): Pro
   try {
     const starters = await prisma.item.findMany({
       where: { name: { in: STARTER_ITEM_NAMES } },
+      include: { itemType: true },
     });
 
     if (starters.length === 0) return user;
@@ -31,9 +32,9 @@ export async function ensureUserExists(discordId: string, username: string): Pro
         create: { userId: discordId, itemId: item.id, quantity: 1 },
       });
 
-      if (item.itemType === 'weapon') weaponId = item.id;
-      if (item.itemType === 'pickaxe') pickaxeId = item.id;
-      if (item.itemType === 'armor') armorId = item.id;
+      if (item.itemType.name === 'weapon') weaponId = item.id;
+      if (item.itemType.name === 'pickaxe') pickaxeId = item.id;
+      if (item.itemType.name === 'armor') armorId = item.id;
     }
 
     const updated = await prisma.user.update({

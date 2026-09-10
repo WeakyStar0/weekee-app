@@ -23,14 +23,14 @@ const command: Command = {
         where: {
           userId: interaction.user.id,
           quantity: { gt: 0 },
-          item: { itemType: { in: SELLABLE_TYPES } },
+          item: { itemType: { name: { in: SELLABLE_TYPES } } },
         },
-        include: { item: true },
+        include: { item: { include: { itemType: true } } },
       });
       const choices = rows.filter((row) => row.item.name.toLowerCase().includes(focused));
       await interaction.respond(
         choices.slice(0, 25).map((row) => ({
-          name: `${row.item.name} (${row.item.itemType})`,
+          name: `${row.item.name} (${row.item.itemType.name})`,
           value: row.item.name,
         })),
       );
@@ -45,13 +45,13 @@ const command: Command = {
     const amountInput = interaction.options.getInteger('amount');
 
     try {
-      const item = await prisma.item.findUnique({ where: { name: itemName } });
+      const item = await prisma.item.findUnique({ where: { name: itemName }, include: { itemType: true } });
       if (!item) {
         await interaction.reply({ content: "I don't know what that item is.", flags: MessageFlags.Ephemeral });
         return;
       }
 
-      if (!SELLABLE_TYPES.includes(item.itemType)) {
+      if (!SELLABLE_TYPES.includes(item.itemType.name)) {
         await interaction.reply({
           content: '❌ You can only sell **Blocks** and **Materials**. Equipment cannot be sold here.',
           flags: MessageFlags.Ephemeral,

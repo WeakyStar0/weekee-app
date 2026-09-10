@@ -15,7 +15,7 @@ const command: Command = {
 
     try {
       const rows = await prisma.inventory.findMany({
-        where: { userId, quantity: { gt: 0 }, item: { itemType: { in: SELLABLE_TYPES } } },
+        where: { userId, quantity: { gt: 0 }, item: { itemType: { name: { in: SELLABLE_TYPES } } } },
         include: { item: true },
       });
 
@@ -40,7 +40,7 @@ const command: Command = {
 
       await prisma.$transaction([
         prisma.inventory.deleteMany({
-          where: { userId, item: { itemType: { in: SELLABLE_TYPES } } },
+          where: { userId, item: { itemType: { name: { in: SELLABLE_TYPES } } } },
         }),
         prisma.user.update({ where: { discordId: userId }, data: { weekoins: { increment: totalCoins } } }),
       ]);
