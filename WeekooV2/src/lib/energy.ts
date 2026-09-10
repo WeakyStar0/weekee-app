@@ -24,3 +24,9 @@ export async function checkAndResetEnergy(userId: string): Promise<number> {
 
   return user.energy;
 }
+
+/** Decrements energy by `amount`, clamped so it never goes below 0. */
+export async function spendEnergy(userId: string, amount: number): Promise<void> {
+  await prisma.user.update({ where: { discordId: userId }, data: { energy: { decrement: amount } } });
+  await prisma.user.updateMany({ where: { discordId: userId, energy: { lt: 0 } }, data: { energy: 0 } });
+}

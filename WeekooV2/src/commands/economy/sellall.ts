@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import type { Command } from '../../types';
 import { prisma } from '../../lib/prisma';
+import { isInAdventure } from '../../lib/adventureGuard';
 
 const SELLABLE_TYPES = ['block', 'material'];
 const WEEKOIN = '<:weekoin:1465807554927132883>';
@@ -12,6 +13,11 @@ const command: Command = {
 
   async execute(interaction) {
     const userId = interaction.user.id;
+
+    if (await isInAdventure(userId)) {
+      await interaction.reply({ content: "You can't sell while on an adventure!", flags: MessageFlags.Ephemeral });
+      return;
+    }
 
     try {
       const rows = await prisma.inventory.findMany({

@@ -3,6 +3,7 @@ import type { Command } from '../../types';
 import { prisma } from '../../lib/prisma';
 import { ensureUserExists } from '../../lib/userRegistry';
 import { getXpNeeded } from '../../lib/leveling';
+import { computeCombatStats } from '../../lib/combatStats';
 
 // Same emoji IDs as V1 — these are application-owned emojis tied to this bot's
 // Discord application, so they carry over since V2 reuses the same bot app.
@@ -111,28 +112,7 @@ const command: Command = {
       return;
     }
 
-    let totalDmg = data.baseDamage + (data.weapon?.mainStatValue ?? 0);
-    let totalDef = data.baseDefense + (data.armor?.mainStatValue ?? 0);
-    let totalLuck = data.baseLuck + (data.pickaxe?.mainStatValue ?? 0);
-    const totalMagic = data.baseMagicDamage;
-    let maxHp = data.baseHp + (data.level - 1);
-
-    const trinketValue = data.trinket?.mainStatValue ?? 0;
-    switch (data.trinket?.statModifierType) {
-      case 'damage':
-        totalDmg = Math.floor(totalDmg * (1 + trinketValue / 100));
-        break;
-      case 'defense':
-        totalDef = Math.floor(totalDef * (1 + trinketValue / 100));
-        break;
-      case 'luck':
-        totalLuck = Math.floor(totalLuck * (1 + trinketValue / 100));
-        break;
-      case 'health':
-        maxHp = Math.floor(maxHp * (1 + trinketValue / 100));
-        break;
-    }
-
+    const { totalDmg, totalDef, totalLuck, totalMagic, maxHp } = computeCombatStats(data);
     const xpNeeded = getXpNeeded(data.level);
     const birthday = data.birthdayDay ? `📅 ${data.birthdayDay}/${data.birthdayMonth}` : 'Not set';
 

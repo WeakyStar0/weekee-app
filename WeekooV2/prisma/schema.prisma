@@ -32,6 +32,10 @@ model User {
   lastDaily       DateTime?
   streak          Int       @default(0)
 
+  // True while an /adventure session is active — shop/buy/sell/sellall check
+  // this and refuse to run so inventory/coins can't shift mid-session.
+  inAdventure     Boolean   @default(false)
+
   weaponId        String?
   pickaxeId       String?
   armorId         String?
@@ -83,6 +87,8 @@ model Item {
   equippedAsPickaxe User[]       @relation("UserPickaxe")
   equippedAsArmor   User[]       @relation("UserArmor")
   equippedAsTrinket User[]       @relation("UserTrinket")
+  enemyLootEntries  EnemyLoot[]
+  miningLootEntries MiningLoot[]
 }
 
 model Inventory {
@@ -98,8 +104,59 @@ model Inventory {
 }
 
 model Dimension {
-  id    String @id @default(cuid())
-  name  String @unique
-  emoji String @default("🌍")
-  users User[]
+  id           String  @id @default(cuid())
+  name         String  @unique
+  emoji        String  @default("🌍")
+  // Chance [0-1] of a monster encounter per adventure action taken here.
+  battleChance Float   @default(0.25)
+
+  users       User[]
+  enemies     Enemy[]
+  miningLoot  MiningLoot[]
+}
+
+// A monster that can be encountered while adventuring in a dimension.
+model Enemy {
+  id          String @id @default(cuid())
+  name        String @unique
+  imageUrl    String @default("")
+  hp          Int
+  damage      Int
+  defense     Int
+  xpDrop      Int    @default(0)
+  dimensionId String
+
+  dimension Dimension   @relation(fields: [dimensionId], references: [id])
+  lootTable EnemyLoot[]
+}
+
+// One possible drop from defeating an enemy — rolled independently per entry,
+// so a single kill can drop multiple things (or nothing beyond guaranteed XP).
+model EnemyLoot {
+  id      String @id @default(cuid())
+  enemyId String
+  itemId  String
+  chance  Float // 0-1
+  minQty  Int   @default(1)
+  maxQty  Int   @default(1)
+
+  enemy Enemy @relation(fields: [enemyId], references: [id])
+  item  Item  @relation(fields: [itemId], references: [id])
+
+  @@unique([enemyId, itemId])
+}
+
+// One possible drop from a mining action in a dimension (blocks/ores, not combat loot).
+model MiningLoot {
+  id          String @id @default(cuid())
+  dimensionId String
+  itemId      String
+  chance      Float // 0-1, before luck bonus
+  minQty      Int    @default(1)
+  maxQty      Int    @default(1)
+
+  dimension Dimension @relation(fields: [dimensionId], references: [id])
+  item      Item      @relation(fields: [itemId], references: [id])
+
+  @@unique([dimensionId, itemId])
 }

@@ -9,6 +9,7 @@ import {
 import type { Item, ItemType } from '@prisma/client';
 import type { Command } from '../../types';
 import { prisma } from '../../lib/prisma';
+import { isInAdventure } from '../../lib/adventureGuard';
 
 const ITEMS_PER_PAGE = 5;
 type SortType = 'price' | 'power' | 'rarity' | 'name';
@@ -72,6 +73,11 @@ const command: Command = {
     ),
 
   async execute(interaction) {
+    if (await isInAdventure(interaction.user.id)) {
+      await interaction.reply({ content: "You can't shop while on an adventure!", flags: MessageFlags.Ephemeral });
+      return;
+    }
+
     let currentPage = 0;
     let currentSort: SortType = 'price';
     const filterType = interaction.options.getString('type');

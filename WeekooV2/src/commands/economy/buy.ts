@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import type { Command } from '../../types';
 import { prisma } from '../../lib/prisma';
+import { isInAdventure } from '../../lib/adventureGuard';
 
 const WEEKOIN = '<:weekoin:1465807554927132883>';
 
@@ -31,6 +32,11 @@ const command: Command = {
     const userId = interaction.user.id;
     const itemName = interaction.options.getString('item', true);
     const quantity = interaction.options.getInteger('amount') ?? 1;
+
+    if (await isInAdventure(userId)) {
+      await interaction.reply({ content: "You can't shop while on an adventure!", flags: MessageFlags.Ephemeral });
+      return;
+    }
 
     try {
       const item = await prisma.item.findUnique({ where: { name: itemName } });

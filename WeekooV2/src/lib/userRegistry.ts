@@ -2,16 +2,23 @@ import { prisma } from './prisma';
 import type { User } from '@prisma/client';
 
 const STARTER_ITEM_NAMES = ['Stone Sword', 'Stone Pickaxe', 'Leather Vest'];
+const DEFAULT_DIMENSION_NAME = 'Overworld';
 
 /**
  * Ensures a user row exists. Brand-new users get the starter kit (if the
- * starter items exist in the DB — seed them via `prisma/seed.ts`).
+ * starter items exist in the DB — seed them via `prisma/seed.ts`) and are
+ * placed in the default dimension (needed for /adventure to know which
+ * enemies/loot tables apply).
  */
 export async function ensureUserExists(discordId: string, username: string): Promise<User> {
   const existing = await prisma.user.findUnique({ where: { discordId } });
   if (existing) return existing;
 
-  const user = await prisma.user.create({ data: { discordId, username } });
+  const defaultDimension = await prisma.dimension.findUnique({ where: { name: DEFAULT_DIMENSION_NAME } });
+
+  const user = await prisma.user.create({
+    data: { discordId, username, dimensionId: defaultDimension?.id },
+  });
 
   try {
     const starters = await prisma.item.findMany({

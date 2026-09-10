@@ -1,4 +1,4 @@
-import type { ChatInputCommandInteraction } from 'discord.js';
+import type { RepliableInteraction } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import { prisma } from './prisma';
 
@@ -28,7 +28,7 @@ export function getTotalXp(level: number, currentXp: number): number {
 export async function addXp(
   userId: string,
   xpToAdd: number,
-  interaction?: ChatInputCommandInteraction,
+  interaction?: RepliableInteraction,
 ): Promise<void> {
   const user = await prisma.user.findUnique({ where: { discordId: userId } });
   if (!user) return;
